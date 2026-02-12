@@ -1,0 +1,17 @@
+[tool.ai_reviewer]
+auto_fix_smells = ["unused_imports", "missing_type_hints","missing_docstring","poor_variable_names","magic_numbers","long_method","feature_envy","god_class"]
+
+openrouter_models = [
+    "deepseek/deepseek-r1-0528:free",
+    "tngtech/deepseek-r1t2-chimera:free",
+    "arcee-ai/trinity-large-preview:free",
+  "qwen/qwen3-coder:free",
+  "google/gemma-3n-e2b-it:free",
+  "qwen/qwen3-next-80b-a3b-instruct:free",
+  "deepseek/deepseek-r1:free",
+]
+
+fallback_openrouter_models = [
+  "google/gemma-7b-it:free",
+  "mistralai/mistral-7b-instruct:free",
+]

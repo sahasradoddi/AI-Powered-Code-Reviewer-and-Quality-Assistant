@@ -1,0 +1,64 @@
+name: 🚀 AI Code Quality & Auto-Fix
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        
+    - name: 🔍 Static Analysis + Reports
+      run: python -m cli scan . -o quality-reports
+      
+    - name: 🤖 AI Review & Auto-Fix
+      run: python -m cli apply . --ai --openrouter
+      env:
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        
+    - name: 📊 Quality Gate (Fail if < 6.0)
+      run: |
+        python -c "
+        import json
+        with open('quality-reports/project_quality_report.json') as f:
+            data = json.load(f)
+        if data['avg_quality_score'] < 6.0:
+            print('❌ Quality gate failed!')
+            exit(1)
+        print('✅ Quality gate passed!')
+        "
+        
+    - name: 📈 Upload HTML Dashboard
+      uses: actions/upload-artifact@v4
+      with:
+        name: code-review-dashboard
+        path: quality-reports/
+        
+  pr-comment:
+    needs: quality-check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Add PR Comment
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        message: |
+          🚀 **AI Code Review Complete!**
+          
+          📊 Quality Score: **{{ needs.quality-check.result }}**
+          🐛 Smells Fixed: Check `applied_fixes.json`
+          🌐 Dashboard: [View HTML Report](artifacts)

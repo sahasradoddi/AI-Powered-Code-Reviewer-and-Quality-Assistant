@@ -1,0 +1,36 @@
+{
+  "project_mi": 100.0,
+  "avg_quality_score": 3.0,
+  "total_files": 1,
+  "total_smells": 2,
+  "severity_distribution": {
+    "medium": 2
+  },
+  "files": {
+    "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\long_params.py": {
+      "file_path": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\long_params.py",
+      "loc": 10,
+      "mi": 100,
+      "smells": [
+        {
+          "type": "long_parameter_list",
+          "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\long_params.py",
+          "node_name": "process_user_data",
+          "line": 1,
+          "severity": "medium",
+          "description": "Function process_user_data: 6 parameters"
+        },
+        {
+          "type": "missing_type_hints",
+          "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\long_params.py",
+          "node_name": "process_user_data",
+          "line": 1,
+          "severity": "medium",
+          "description": "Function process_user_data: no parameter or return type hints"
+        }
+      ],
+      "quality_score": 3.0
+    }
+  },
+  "timestamp": "2026-02-12 16:28:03"
+}

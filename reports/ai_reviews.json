@@ -1,0 +1,82 @@
+[
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 19,
+    "severity": "high",
+    "title": "Long Method Detected",
+    "explanation": "The function 'process_order' spans 37 lines, exceeding typical maintainability thresholds. Long methods are harder to understand, test, and debug. They often violate the Single Responsibility Principle, increasing the risk of hidden bugs and making future modifications error-prone.",
+    "suggestion": "Refactor by extracting logical segments into helper functions (e.g., validation, payment processing, inventory updates). Aim for methods under 15 lines. Use meaningful names for new functions to preserve readability and intent."
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 19,
+    "severity": "high",
+    "title": "Excessive Parameters in Function",
+    "explanation": "The function 'process_order' has 10 parameters, indicating a long parameter list smell. This makes the function difficult to understand, maintain, and test. It often suggests the function is handling too many responsibilities or that related parameters aren't logically grouped.",
+    "suggestion": "Refactor by grouping related parameters into a single object (e.g., an 'OrderDetails' class or dictionary). Alternatively, break the function into smaller sub-functions with cohesive responsibilities, or use the Parameter Object pattern to encapsulate arguments."
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 8,
+    "severity": "medium",
+    "title": "Missing Type Hints in Constructor",
+    "explanation": "The __init__ method lacks type hints for parameters and return value. This reduces code clarity, hinders static type checking, and complicates maintenance by obscuring expected argument types.",
+    "suggestion": "Add type annotations to all parameters and specify -> None return type. Example: def __init__(self, param1: type, param2: type) -> None: ..."
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 19,
+    "severity": "medium",
+    "title": "Missing Type Hints",
+    "explanation": "The function 'process_order' lacks type annotations for parameters and return value. This reduces code readability, hinders static analysis, and prevents early detection of type-related errors.",
+    "suggestion": "Add type hints to parameters and return value. Example: 'def process_order(order_id: int, items: list[str]) -> bool: ...'"
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 82,
+    "severity": "low",
+    "title": "Missing Type Hints in Function",
+    "explanation": "The function '_unsafe_log_error' lacks type annotations for its parameters and return value. This reduces code clarity, hinders static type checking, and makes the code harder to maintain and understand.",
+    "suggestion": "Add type hints to all parameters and specify the return type. For example: `def _unsafe_log_error(message: str, error: Exception) -> None:`"
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 94,
+    "severity": "low",
+    "title": "Function 'run' missing type hints",
+    "explanation": "Function run: no parameter or return type hints. Lack of type hints reduces code clarity and makes static analysis tools less effective, hindering developer understanding.",
+    "suggestion": "Add type hints to function parameters and return values to improve code readability, enable static analysis, and reduce runtime errors."
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 19,
+    "severity": "medium",
+    "title": "Excessive Local Variables in Function",
+    "explanation": "The function 'process_order' defines 12 local variables, indicating it may be handling multiple responsibilities. This violates the Single Responsibility Principle, making the code harder to read, test, and maintain. High variable count often correlates with complex logic, increasing the risk of bugs and reducing code clarity.",
+    "suggestion": "Refactor by splitting 'process_order' into smaller, focused functions. Group related variables and operations (e.g., validation, calculation, formatting) into separate helper functions. This improves modularity, simplifies debugging, and enhances code reusability."
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 90,
+    "severity": "high",
+    "title": "Broad Exception Swallowing at Module Level",
+    "explanation": "Using a broad 'except' clause without handling exceptions hides errors, making debugging difficult and potentially allowing the program to continue in an inconsistent state. At the module level, this can suppress critical startup errors or configuration issues without any logging or recovery.",
+    "suggestion": "Replace the broad 'except' with specific exception handling, add logging (e.g., logging.exception(\"Error\")), or re-raise the exception. If recovery isn't possible, terminate the program cleanly with an error message."
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 79,
+    "severity": "medium",
+    "title": "Unreachable Code Detected",
+    "explanation": "The 'process_order' function contains statements placed after a return, raise, break, or continue statement. These statements will never execute because the function exits at the control flow statement, making subsequent code redundant.",
+    "suggestion": "Remove the unreachable code or restructure the logic to ensure all statements serve a purpose. Verify if the control flow statement should be placed elsewhere to allow subsequent code execution."
+  },
+  {
+    "file": "C:\\Users\\Dell\\OneDrive\\Desktop\\trail2\\test_each_smell\\new_smells.py",
+    "line": 80,
+    "severity": "medium",
+    "title": "Unreachable Code in process_order Function",
+    "explanation": "The 'process_order' function contains statements placed after a return, raise, break, or continue statement. These statements will never execute because the function exits at the control flow statement, leading to dead code that wastes resources and potentially obscures logic.",
+    "suggestion": "Remove the unreachable statements or restructure the function's control flow to ensure all code is reachable. For example, place critical operations before return statements or consolidate return paths."
+  }
+]

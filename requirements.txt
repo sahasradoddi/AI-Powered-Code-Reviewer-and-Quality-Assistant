@@ -1,0 +1,4 @@
+requests
+python-dotenv
+tomli
+pre-commit

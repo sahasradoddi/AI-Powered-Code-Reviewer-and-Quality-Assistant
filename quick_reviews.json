@@ -1,0 +1,18 @@
+[
+  {
+    "file": "test_each_smell\\long_params.py",
+    "line": 1,
+    "severity": "medium",
+    "title": "Excessive Parameters in Function",
+    "explanation": "The function 'process_user_data' has 6 parameters, exceeding the recommended limit. This complicates readability, testing, and maintenance, and often indicates the function handles too many responsibilities.",
+    "suggestion": "Refactor by grouping related parameters into a single data object (e.g., a dataclass or dictionary) or split the function into smaller, focused sub-functions with fewer parameters."
+  },
+  {
+    "file": "test_each_smell\\long_params.py",
+    "line": 1,
+    "severity": "medium",
+    "title": "Missing Type Hints",
+    "explanation": "The function 'process_user_data' lacks type annotations for its parameters and return value. This omission reduces code clarity, hinders static analysis tools, and makes the function's intended usage and output ambiguous for developers.",
+    "suggestion": "Add type hints to parameters and return value. Example: def process_user_data(user_id: int, data: dict) -> bool: ..."
+  }
+]

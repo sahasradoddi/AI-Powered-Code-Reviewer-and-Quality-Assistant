@@ -1,0 +1,7 @@
+{
+    "python.terminal.activateEnvironment": false,
+    "python.terminal.executeInFileDir": false,
+    "code-runner.runInTerminal": false,
+    "python.linting.enabled": true,
+    "editor.codeActionsOnSave": {}
+}
