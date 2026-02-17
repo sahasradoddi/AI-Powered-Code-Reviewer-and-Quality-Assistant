@@ -1,16 +1,10 @@
 repos:
   - repo: local
     hooks:
-      - id: ai-code-reviewer
-        name: AI Code Reviewer (Quality Gate)
-        entry: python -m cli scan . --min-quality 6.0
+      - id: ai-code-review
+        name: "AI Code Quality Gate"
+        entry: python cli.py gate        # ← CHANGED: cli.py not code-reviewer
         language: system
-        pass_filenames: false
-        always_run: true
-        description: "Blocks commits with quality score < 6.0"
-      - id: ai-auto-fixes
-        name: Apply AI Fixes
-        entry: python -m cli apply . --ai --auto-apply-safe
-        language: system
-        pass_filenames: false
-        stages: [commit]
+        pass_filenames: true
+        files: ^.*\.py$
+        exclude: '^(\.venv|quality_reports|\.git)'
