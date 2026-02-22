@@ -216,37 +216,109 @@ def compute_docstring_coverage(path: Path):
     return coverage_pct, documented, total_objects, per_file
 
 @cli.command()
-@click.argument("path", type=click.Path(exists=True))
-@click.option("-o", "--output-dir", default="quality_reports")
+@click.argument("paths", nargs=-1, type=click.Path(exists=True))
+@click.option("-o", "--output", default=".precommit_temp")
 @click.option("--min-quality", type=float, default=6.0)
-def gate(path, output_dir, min_quality):
-    """Quality gate: exit 0 if passes, 1 if fails (pre-commit/CI)"""
-    click.echo(f"🔍 Quality gate: {path}")
-    
-    # Run scan first
-    ctx = click.Context(cli)
-    with ctx:
-        ctx.invoke(scan, path=path, output_dir=output_dir)
-    
-    # Check gate conditions
-    report_path = Path(output_dir) / "project_quality_report.json"
-    with open(report_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    
-    avg_quality = data.get("avg_quality_score", 0.0)
-    sev_dist = data.get("severity_distribution", {})
-    
-    critical = sev_dist.get("critical", 0)
-    high = sev_dist.get("high", 0)
-    
-    if avg_quality < min_quality or critical > 0 or high > 0:
-        click.echo("❌ QUALITY GATE FAILED!")
-        click.echo(f"  Quality score: {avg_quality:.1f} < {min_quality}")
-        if critical > 0: click.echo(f"  Critical: {critical}")
-        if high > 0: click.echo(f"  High: {high}")
-        raise click.Abort()
-    
-    click.echo(f"✅ QUALITY GATE PASSED! (Quality: {avg_quality:.1f})")
+@click.option("--mode", type=click.Choice(["single", "batch"]), default="single")
+def gate(paths, output, min_quality, mode):
+    """Quality gate for pre-commit/CI"""
+    from pathlib import Path
+    import json
+    import shutil
+
+    CORE_FILES = {
+        "cli.py", "code_quality_analyzer.py", "ai_review_engine.py",
+        "autofix_engine.py", "config_loader.py", "main.py",
+    }
+
+    if not paths:
+        click.echo("No files to analyze")
+        sys.exit(0)  # Allow empty commits
+
+    temp_dir = Path(output)
+    temp_dir.mkdir(exist_ok=True)
+
+    try:
+        if mode == "single":
+            # === your existing per-file loop ===
+            failed_files = []
+
+            for path_str in paths:
+                path = Path(path_str)
+
+                if path.name in CORE_FILES:
+                    click.echo(f"⏭️ SKIP core: {path.name}")
+                    continue
+
+                click.echo(f"🔍 Gate: {path.name}")
+
+                ctx = click.Context(cli)
+                with ctx:
+                    ctx.invoke(scan, path=str(path), output=str(temp_dir))
+
+                report_path = temp_dir / "project_quality_report.json"
+                with open(report_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+
+                quality = data.get("avg_quality_score", 0.0)
+                sev_dist = data.get("severity_distribution", {})
+
+                medium = sev_dist.get("medium", 0)
+                high = sev_dist.get("high", 0)
+                critical = sev_dist.get("critical", 0)
+
+                if medium > 0 or high > 0 or critical > 0:
+                    click.echo(f"❌ FAILED {path.name}")
+                    click.echo(f"  Quality: {quality:.1f} | Medium: {medium}")
+                    failed_files.append(path.name)
+                else:
+                    click.echo(f"✅ PASSED {path.name} ({quality:.1f})")
+
+            if failed_files:
+                click.echo(f"\n🚫 BLOCKED {len(failed_files)} files:")
+                for f in failed_files:
+                    click.echo(f"  - {f}")
+                raise click.Abort()
+
+            click.echo("🎉 ALL FILES PASSED!")
+
+        else:  # mode == "batch"
+            # === new batch behaviour ===
+            from pathlib import Path
+
+            paths = [Path(p) for p in paths if Path(p).name not in CORE_FILES]
+            if not paths:
+                click.echo("No non-core files to analyze in batch")
+                sys.exit(0)
+
+            click.echo(f"📊 BATCH MODE: {len(paths)} files")
+
+            # Run scan once over all files (your scan can take a dir or list)
+            ctx = click.Context(cli)
+            with ctx:
+                # simplest: pass the folder (repo root) – scan will see all .py
+                ctx.invoke(scan, path=".", output=str(temp_dir))
+
+            report_path = temp_dir / "project_quality_report.json"
+            with open(report_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            avg_quality = data.get("avg_quality_score", 0.0)
+            total_smells = data.get("total_smells", 0)
+            sev_dist = data.get("severity_distribution", {})
+
+            click.echo(f"⭐ Avg Quality: {avg_quality:.1f}/10")
+            click.echo(f"🐛 Total Smells: {total_smells}")
+            click.echo(f"⚠️ Severity: {sev_dist}")
+
+            if avg_quality < min_quality or total_smells > 0:
+                click.echo("🚫 PROJECT FAILED (batch gate)")
+                sys.exit(1)
+            else:
+                click.echo("🎉 PROJECT PASSED (batch gate)")
+
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 if __name__ == "__main__":

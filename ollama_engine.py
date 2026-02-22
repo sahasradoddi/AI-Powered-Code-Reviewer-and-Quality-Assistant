@@ -1,6 +1,13 @@
 import json
 import subprocess
 from typing import Tuple, Optional, Any
+import sys
+import os
+
+# Fix Windows emoji encoding
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8')
+    os.system('chcp 65001 > nul')  # Silent UTF-8 mode
 
 
 class OllamaReviewEngine:

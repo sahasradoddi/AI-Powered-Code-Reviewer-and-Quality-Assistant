@@ -172,7 +172,7 @@ class AutoFixEngine:
                     continue
 
                 before_src = self._get_node_source(lines, node)
-                fixed_src = self._get_ai_fix(smell, before_src)  # ✅ REPLACED HERE
+                fixed_src = self._get_ai_fix(smell, before_src)  
                 if not fixed_src:
                     fixes.append(
                         AutoFix(

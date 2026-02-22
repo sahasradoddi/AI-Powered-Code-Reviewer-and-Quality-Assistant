@@ -50,34 +50,47 @@ class AIReviewEngine:
         total = len(smells)
         print(f"\n🚀 AI REVIEW ENGINE: Processing {total} smells...")
         print("-" * 65)
-
+    
         for i, smell in enumerate(smells, 1):
             if i > 1:
                 time.sleep(self.REQUEST_DELAY)
-
+    
             file_name = os.path.basename(smell.file)
             print(f"[{i}/{total}] 🔍 Analyzing {file_name}:{smell.line}")
-
+    
             review_result = None
-
+    
             # 1. Try OpenRouter if enabled
             if self.openrouter_engine is not None:
                 review_result = self.openrouter_engine.get_review(smell)
-
+    
             # 2. If OpenRouter failed or disabled, try Ollama if enabled
             if review_result is None and self.ollama_engine is not None:
                 review_result = self.ollama_engine.get_review(smell)
-
+    
             # 3. If all AI engines fail or are disabled, use rule-based
             ai_severity = ""
             if review_result is None:
                 title, explanation, suggestion = self.rule_based_engine.get_review(smell)
             else:
-                # review_result from AI now has 4 elements
-                title, explanation, suggestion, ai_severity = review_result
-
+                # Handle 3- or 4-element tuples from AI engines
+                if isinstance(review_result, (list, tuple)):
+                    if len(review_result) == 4:
+                        title, explanation, suggestion, ai_severity = review_result
+                    elif len(review_result) == 3:
+                        title, explanation, suggestion = review_result
+                        ai_severity = ""
+                    else:
+                        # Unexpected shape: fall back to rule-based
+                        title, explanation, suggestion = self.rule_based_engine.get_review(smell)
+                        ai_severity = ""
+                else:
+                    # Totally unexpected type: fall back to rule-based
+                    title, explanation, suggestion = self.rule_based_engine.get_review(smell)
+                    ai_severity = ""
+    
             severity = self._normalize_severity(ai_severity, smell.severity)
-
+    
             comments.append(
                 ReviewComment(
                     file=smell.file,
@@ -88,7 +101,7 @@ class AIReviewEngine:
                     suggestion=suggestion,
                 )
             )
-
+    
         print("-" * 65)
         print("✅ AI Review Complete.\n")
         return comments

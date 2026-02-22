@@ -1,19 +1,16 @@
-def process_user_data(user_id, name, email, age, country, subscription_type):
-    """
-    Example function with a long parameter list, designed to trigger
-    the 'long_parameter_list' smell in your analyzer.
-    """
-    # Simple fake logic to make it look realistic
+def process_user_data(
+    user_id: int, name: str, email: str, age: int, country: str, subscription_type: str
+) -> dict:
+    """Example function with a long parameter list, designed to trigger the 'long_parameter_list' smell in your analyzer."""
     is_adult = age >= 18
     region = "EU" if country in {"FR", "DE", "ES"} else "Other"
-
-    if subscription_type == "premium":
-        access_level = "FULL"
-    elif subscription_type == "trial":
-        access_level = "LIMITED"
-    else:
-        access_level = "BASIC"
-
+    
+    access_level: str = (
+        "FULL" if subscription_type == "premium" else
+        "LIMITED" if subscription_type == "trial" else 
+        "BASIC"
+    )
+    
     return {
         "user_id": user_id,
         "name": name,

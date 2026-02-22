@@ -1,3 +1,0 @@
-file,smell_type,function_class,line,severity,description,file_mi,file_quality
-C:\Users\Dell\OneDrive\Desktop\trail2\test_each_smell\long_params.py,long_parameter_list,process_user_data,1,medium,Function process_user_data: 6 parameters,100,3.0
-C:\Users\Dell\OneDrive\Desktop\trail2\test_each_smell\long_params.py,missing_type_hints,process_user_data,1,medium,Function process_user_data: no parameter or return type hints,100,3.0

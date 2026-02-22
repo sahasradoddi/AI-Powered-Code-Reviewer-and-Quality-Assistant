@@ -15,14 +15,21 @@ REAL-LIFE SCENARIO: Generic System Analysis
 import ast
 import json
 import csv
-import os
 import math
-import sys
 from collections import defaultdict, Counter
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from datetime import datetime # Added for realism, used in sample_code
+import sys
+import os
+
+# Fix Windows emoji encoding
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8')
+    os.system('chcp 65001 > nul')  # Silent UTF-8 mode
+
+
 
 @dataclass
 class CodeSmell:
@@ -504,7 +511,7 @@ class CodeQualityAnalyzer:
         json_path = output_dir / "project_quality_report.json"
         with open(json_path, 'w') as f:
             json.dump(project_metrics, f, indent=2, default=str)
-        print(f"📄 JSON Report: {json_path}")
+        print(f" JSON Report: {json_path}")
 
         # 2. CSV Report (EXISTING - your code stays exactly same)
         csv_path = output_dir / "project_quality_report.csv"
@@ -540,21 +547,37 @@ class CodeQualityAnalyzer:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(flat_rows)
-        print(f"📊 CSV Report: {csv_path}")
+        print(f" CSV Report: {csv_path}")
 
         # 3. NEW HTML Report
         self._generate_html_report(project_metrics, output_directory)
 
+        # # Summary Console Output (UPDATED)
+        # print(f"\n🚀 PROJECT SUMMARY:")
+        # print(f"   📈 Project MI: {project_metrics['project_mi']:.1f}")
+        # print(f"   ⭐ Avg Quality: {project_metrics['avg_quality_score']:.1f}/10")
+        # print(f"   📁 Files: {project_metrics['total_files']}")
+        # print(f"   🐛 Total Smells: {project_metrics['total_smells']}")
+        # print(f"   ⚠️  Severity: {dict(project_metrics['severity_distribution'])}")
+        # print(f"   📁 Reports generated in: {output_dir}")
+        # print(f"   🌐 HTML Dashboard: {output_dir}/code_review_dashboard.html")
+        # print(f"   🎉 Open HTML in browser for beautiful dashboard!")
+
+
         # Summary Console Output (UPDATED)
-        print(f"\n🚀 PROJECT SUMMARY:")
-        print(f"   📈 Project MI: {project_metrics['project_mi']:.1f}")
-        print(f"   ⭐ Avg Quality: {project_metrics['avg_quality_score']:.1f}/10")
-        print(f"   📁 Files: {project_metrics['total_files']}")
-        print(f"   🐛 Total Smells: {project_metrics['total_smells']}")
-        print(f"   ⚠️  Severity: {dict(project_metrics['severity_distribution'])}")
-        print(f"   📁 Reports generated in: {output_dir}")
-        print(f"   🌐 HTML Dashboard: {output_dir}/code_review_dashboard.html")
-        print(f"   🎉 Open HTML in browser for beautiful dashboard!")
+        print(f"\nPROJECT SUMMARY:")
+        print(f"    Project MI: {project_metrics['project_mi']:.1f}")
+        print(f"    Avg Quality: {project_metrics['avg_quality_score']:.1f}/10")
+        print(f"    Files: {project_metrics['total_files']}")
+        print(f"    Total Smells: {project_metrics['total_smells']}")
+        print(f"     Severity: {dict(project_metrics['severity_distribution'])}")
+        print(f"    Reports generated in: {output_dir}")
+        print(f"    HTML Dashboard: {output_dir}/code_review_dashboard.html")
+        print(f"    Open HTML in browser for beautiful dashboard!")
+
+
+
+
 
 
     def _generate_html_report(self, project_metrics: Dict[str, Any], output_directory: str):
@@ -575,7 +598,7 @@ class CodeQualityAnalyzer:
         html_content = f"""<!DOCTYPE html>
     <html>
     <head>
-        <title>🚀 AI Code Review Dashboard</title>
+        <title> AI Code Review Dashboard</title>
         <style>
             body {{font-family:Arial,sans-serif;background:#f5f5f5;padding:20px}}
             .container {{max-width:1200px;margin:0 auto;background:white;border-radius:15px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,0.1)}}
@@ -598,7 +621,7 @@ class CodeQualityAnalyzer:
     <body>
         <div class="container">
             <div class="header">
-                <h1>🚀 AI Code Review Dashboard</h1>
+                <h1> AI Code Review Dashboard</h1>
                 <p>Generated: {project_metrics['timestamp']}</p>
             </div>
     
@@ -666,7 +689,7 @@ class CodeQualityAnalyzer:
     </html>"""
         
         html_path.write_text(html_content, encoding='utf-8')
-        print(f"🌐 HTML Dashboard: {html_path}")
+        print(f" HTML Dashboard: {html_path}")
     
     
     

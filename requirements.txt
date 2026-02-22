@@ -2,3 +2,5 @@ requests
 python-dotenv
 tomli
 pre-commit
+
+pip install streamlit

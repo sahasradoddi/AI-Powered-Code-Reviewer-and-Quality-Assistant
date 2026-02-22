@@ -16,12 +16,12 @@ class OpenRouterReviewEngine:
         # Default lists (used if config missing) - STABLE FREE MODELS
         default_models = [
             "qwen/qwen2.5-coder:free",
-            "deepseek/deepseek-coder-v2:free", 
-            "google/gemma-2-9b-it:free"
+            "deepseek/deepseek-coder-v2:free",
+            "google/gemma-2-9b-it:free",
         ]
         default_fallback = [
             "meta-llama/llama-3.2-1b-instruct:free",
-            "microsoft/phi-3-mini-128k-instruct:free"
+            "microsoft/phi-3-mini-128k-instruct:free",
         ]
 
         config_models, config_fallback = self._load_model_config_from_pyproject()
@@ -60,8 +60,18 @@ class OpenRouterReviewEngine:
             data = json.loads(clean_str)
             return (
                 str(data.get("title", "AI Review Unavailable")),
-                str(data.get("explanation", "The AI did not provide a detailed explanation.")),
-                str(data.get("suggestion", "Consider refactoring based on general code quality guidelines.")),
+                str(
+                    data.get(
+                        "explanation",
+                        "The AI did not provide a detailed explanation.",
+                    )
+                ),
+                str(
+                    data.get(
+                        "suggestion",
+                        "Consider refactoring based on general code quality guidelines.",
+                    )
+                ),
             )
         except json.JSONDecodeError:
             print("      ❌ OpenRouter: JSON parsing failed.")
@@ -78,14 +88,17 @@ class OpenRouterReviewEngine:
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "http://localhost:3000",
-            "X-Title": "Code Review Project", 
+            "X-Title": "Code Review Project",
             "Content-Type": "application/json",
         }
+
+        # Handle nodename / node_name safely
+        node_name = getattr(smell, "nodename", getattr(smell, "node_name", ""))
 
         prompt = (
             "Return ONLY JSON: {'title': '...', 'explanation': '...', 'suggestion': '...'}\n"
             f"Review the following code smell: Type: {smell.type}, "
-            f"Node: {smell.node_name}, Description: {smell.description}"
+            f"Node: {node_name}, Description: {smell.description}"
         )
 
         all_models_to_try = self.openrouter_models + self.fallback_openrouter_models
@@ -108,37 +121,63 @@ class OpenRouterReviewEngine:
 
             try:
                 print(f"      Trying OpenRouter model: {model_id}")
-                response = requests.post(self.api_url, headers=headers, json=payload, timeout=40)
+                response = requests.post(
+                    self.api_url, headers=headers, json=payload, timeout=40
+                )
 
                 if response.status_code == 200:
                     data = response.json()
-                    raw_content = data["choices"][0]["message"]["content"]  # ✅ Correct indexing
+                    raw_content = data["choices"][0]["message"]["content"]
                     parsed_review = self._parse_ai_json(raw_content)
                     if parsed_review:
-                        print(f"      ✅ OpenRouter ({model_id.split('/')[-1]}): {parsed_review[0][:50]}...")
+                        print(
+                            f"      ✅ OpenRouter ({model_id.split('/')[-1]}): "
+                            f"{parsed_review[0][:50]}..."
+                        )
                         return parsed_review
 
                 elif response.status_code == 401:
-                    print("      ❌ OpenRouter: Invalid API Key. Please check your OPENROUTER_API_KEY.")
+                    print(
+                        "      ❌ OpenRouter: Invalid API Key. "
+                        "Please check your OPENROUTER_API_KEY."
+                    )
                     return None
                 elif response.status_code == 429:
-                    print(f"      ⏭️  OpenRouter ({model_id.split('/')[-1]}): Rate limit hit. Trying next model.")
+                    print(
+                        f"      ⏭️  OpenRouter ({model_id.split('/')[-1]}): "
+                        "Rate limit hit. Trying next model."
+                    )
                     continue
                 elif response.status_code in [500, 503, 504]:
-                    print(f"      ⏭️  OpenRouter ({model_id.split('/')[-1]}): Server error ({response.status_code}). Trying next model.")
+                    print(
+                        f"      ⏭️  OpenRouter ({model_id.split('/')[-1]}): "
+                        f"Server error ({response.status_code}). Trying next model."
+                    )
                     continue
                 else:
-                    print(f"      ⏭️  OpenRouter ({model_id.split('/')[-1]}): API error (Status {response.status_code}). Trying next model.")
+                    print(
+                        f"      ⏭️  OpenRouter ({model_id.split('/')[-1]}): "
+                        f"API error (Status {response.status_code}). Trying next model."
+                    )
                     continue
 
             except requests.exceptions.Timeout:
-                print(f"      ❌ OpenRouter ({model_id.split('/')[-1]}): Request timed out after 40 seconds. Trying next model.")
+                print(
+                    f"      ❌ OpenRouter ({model_id.split('/')[-1]}): "
+                    "Request timed out after 40 seconds. Trying next model."
+                )
                 continue
             except requests.exceptions.ConnectionError as ce:
-                print(f"      ❌ OpenRouter ({model_id.split('/')[-1]}): Connection error: {ce}. Check internet/proxy. Trying next model.")
+                print(
+                    f"      ❌ OpenRouter ({model_id.split('/')[-1]}): "
+                    f"Connection error: {ce}. Check internet/proxy. Trying next model."
+                )
                 continue
             except Exception as e:
-                print(f"      ❌ OpenRouter ({model_id.split('/')[-1]}): Unexpected error: {str(e)[:100]}. Trying next model.")
+                print(
+                    f"      ❌ OpenRouter ({model_id.split('/')[-1]}): "
+                    f"Unexpected error: {str(e)[:100]}. Trying next model."
+                )
                 continue
 
         print("      ⚠️ OpenRouter: All models failed or no API key. Falling back.")
@@ -161,6 +200,8 @@ class OpenRouterReviewEngine:
             "Content-Type": "application/json",
         }
 
+        node_name = getattr(smell, "nodename", getattr(smell, "node_name", ""))
+
         prompt = f"""
 You are a professional Python refactoring assistant.
 
@@ -169,7 +210,7 @@ return a corrected version of the SAME function/method ONLY.
 
 Requirements:
 - Preserve the function/method name and signature exactly
-- Keep behavior logically equivalent (only improve style/readability/safety)  
+- Keep behavior logically equivalent (only improve style/readability/safety)
 - Do NOT add surrounding code (no imports, no extra functions)
 - Do NOT wrap the code in ``` or any Markdown
 - Do NOT include any explanations or comments
@@ -177,7 +218,7 @@ Requirements:
 
 Smell type: {smell.type}
 File: {smell.file}:{smell.line}
-Function/Class: {smell.node_name}
+Function/Class: {node_name}
 Issue: {smell.description}
 
 Original code:
@@ -207,49 +248,78 @@ Return ONLY the fixed function/method code.
 
             try:
                 print(f"      Trying OpenRouter auto-fix model: {model_id}")
-                response = requests.post(self.api_url, headers=headers, json=payload, timeout=45)
+                response = requests.post(
+                    self.api_url, headers=headers, json=payload, timeout=45
+                )
 
                 if response.status_code == 200:
                     data = response.json()
-                    # ✅ FIXED: Correct list indexing 
-                    raw_content = data["choices"]["message"]["content"]
-                    
+                    # Correct list indexing (same as review path)
+                    raw_content = data["choices"][0]["message"]["content"]
+
                     # Clean code output
                     code = (
-                        raw_content
-                        .replace("```python", "")
-                        .replace("```", "")
+                        raw_content.replace("```python", "")
                         .replace("``` py", "")
+                        .replace("```", "")
                         .strip()
                     )
-                    
-                    if code and len(code) > 10:  # Basic sanity check
-                        print(f"      ✅ OpenRouter auto-fix succeeded: {len(code)} chars")
+
+                    # More permissive: accept any non-empty code;
+                    # later AST parse in AutoFixEngine will reject broken patches.
+                    if code:
+                        print("------ RAW FIXED CODE START ------")
+                        print(code)
+                        print("------ RAW FIXED CODE END ------")
+                        print(
+                            f"      ✅ OpenRouter auto-fix succeeded: {len(code)} chars"
+                        )
                         return code
                     else:
-                        print("      ❌ OpenRouter auto-fix: empty/invalid output, trying next model.")
-                        
+                        print(
+                            "      ❌ OpenRouter auto-fix: empty output, "
+                            "trying next model."
+                        )
+
                 elif response.status_code == 401:
                     print("      ❌ OpenRouter auto-fix: invalid API key.")
                     return None
                 elif response.status_code == 429:
-                    print(f"      ⏭️ OpenRouter auto-fix ({model_id.split('/')[-1]}): rate limit, trying next model.")
+                    print(
+                        f"      ⏭️ OpenRouter auto-fix ({model_id.split('/')[-1]}): "
+                        "rate limit, trying next model."
+                    )
                     continue
                 elif response.status_code in (500, 503, 504):
-                    print(f"      ⏭️ OpenRouter auto-fix ({model_id.split('/')[-1]}): server error {response.status_code}, trying next model.")
+                    print(
+                        f"      ⏭️ OpenRouter auto-fix ({model_id.split('/')[-1]}): "
+                        f"server error {response.status_code}, trying next model."
+                    )
                     continue
                 else:
-                    print(f"      ⏭️ OpenRouter auto-fix ({model_id.split('/')[-1]}): API error {response.status_code}")
+                    print(
+                        f"      ⏭️ OpenRouter auto-fix ({model_id.split('/')[-1]}): "
+                        f"API error {response.status_code}"
+                    )
                     continue
-                    
+
             except requests.exceptions.Timeout:
-                print(f"      ❌ OpenRouter auto-fix ({model_id.split('/')[-1]}): timeout")
+                print(
+                    f"      ❌ OpenRouter auto-fix ({model_id.split('/')[-1]}): "
+                    "timeout"
+                )
                 continue
             except requests.exceptions.ConnectionError:
-                print(f"      ❌ OpenRouter auto-fix ({model_id.split('/')[-1]}): connection error")
+                print(
+                    f"      ❌ OpenRouter auto-fix ({model_id.split('/')[-1]}): "
+                    "connection error"
+                )
                 continue
             except Exception as e:
-                print(f"      ❌ OpenRouter auto-fix ({model_id.split('/')[-1]}): {str(e)[:80]}")
+                print(
+                    f"      ❌ OpenRouter auto-fix ({model_id.split('/')[-1]}): "
+                    f"{str(e)[:80]}"
+                )
                 continue
 
         print("      ⚠️ OpenRouter auto-fix: all models failed.")

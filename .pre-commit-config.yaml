@@ -1,10 +1,20 @@
 repos:
   - repo: local
     hooks:
-      - id: ai-code-review
-        name: "AI Code Quality Gate"
-        entry: python cli.py gate        # ← CHANGED: cli.py not code-reviewer
+      # SINGLE FILE MODE (current - one file at a time)
+      - id: ai-gate-single
+        name: "AI Gate (Single File)"
+        entry: python cli.py gate --mode single
         language: system
         pass_filenames: true
-        files: ^.*\.py$
-        exclude: '^(\.venv|quality_reports|\.git)'
+        files: ^demo_.*\.py$
+        exclude: '^(\.venv|__pycache__|\.git|\.env|.*\.json|.*\.html|reports/|quality_reports/)'
+      
+      # BATCH MODE (all Python files together)
+      - id: ai-gate-batch
+        name: "AI Gate (Batch Analysis)"
+        entry: python cli.py gate --mode batch
+        language: system
+        pass_filenames: false
+        files: \.py$
+        exclude: '^(\.venv|__pycache__|\.git|\.env|.*\\.json|.*\\.html|reports/|quality_reports/)'
